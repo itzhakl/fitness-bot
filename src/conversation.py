@@ -9,7 +9,6 @@ from config import ANTHROPIC_API_KEY
 from logger import logger
 import json
 
-# chat = ChatAnthropic(anthropic_api_key=ANTHROPIC_API_KEY, max_tokens_to_sample=1000)
 llm = ChatAnthropic(
     model="claude-3-5-sonnet-20240620",
     temperature=0,
