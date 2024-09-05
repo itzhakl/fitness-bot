@@ -1,6 +1,5 @@
-# from langchain_community.chat_models import ChatAnthropic
 from langchain_anthropic import ChatAnthropic
-from langchain.schema import HumanMessage, AIMessage
+# from langchain.schema import HumanMessage, AIMessage
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables import RunnableWithMessageHistory
