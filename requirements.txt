@@ -1,0 +1,4 @@
+python-telegram-bot
+anthropic
+langchain
+python-dotenv
