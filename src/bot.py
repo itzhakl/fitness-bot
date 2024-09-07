@@ -1,4 +1,3 @@
-import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from conversation import handle_conversation, initialize_user_history
@@ -19,9 +18,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_message = update.message.text
     user_id = update.effective_user.id
     
-    # קבלת 10 ההודעות האחרונות מהצ'אט
-    # last_10_messages = await get_last_10_messages(update, context)
-    
+    # שליחת פעולת "מקליד..."
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
+
     # העברת ההודעות האחרונות לתוך פונקציית הטיפול בשיחה
     response = handle_conversation(user_id, user_message)
     
@@ -30,20 +29,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         chunk = response[i:i+4000]
         await update.message.reply_text(chunk)
         logger.info(f"נשלח חלק באורך {len(chunk)} תווים")
-
-# async def get_last_10_messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> list:
-#     chat_id = update.message.chat_id
-
-#     # רשימת ההודעות האחרונות
-#     last_10_messages = []
-
-#     # קבלת עד 10 ההודעות האחרונות מתוך הצ'אט
-#     async for message in context.bot.get_chat(chat_id).iter_history(limit=10):
-#         if message.text:  # רק אם מדובר בהודעה טקסטואלית
-#             last_10_messages.append(message.text)
-
-#     return last_10_messages
-
 
 def setup_bot() -> None:
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()

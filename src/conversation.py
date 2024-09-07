@@ -1,6 +1,11 @@
 from langchain_anthropic import ChatAnthropic
-# from langchain.schema import HumanMessage, AIMessage
-from langchain.prompts import ChatPromptTemplate
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.prompts import (
+    SystemMessagePromptTemplate, 
+    HumanMessagePromptTemplate, 
+    ChatPromptTemplate, 
+    MessagesPlaceholder
+)
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables import RunnableWithMessageHistory
 from dataclasses import dataclass, asdict
@@ -11,7 +16,7 @@ import json
 llm = ChatAnthropic(
     model="claude-3-5-sonnet-20240620",
     temperature=0,
-    max_tokens=1024,
+    max_tokens=4096,
     timeout=None,
     max_retries=2,
     api_key=ANTHROPIC_API_KEY,
@@ -30,20 +35,46 @@ class UserProfile:
     activity_level: str = ""
     fitness_goals: str = ""
 
+# הגדרת פרומפט המערכת
+system_message = SystemMessagePromptTemplate.from_template("""
+אתה אלון, מאמן כושר ויועץ תזונה וירטואלי מקצועי ומנוסה. עליך:
+
+1. לענות בעברית בקצרה וממוקד.
+2. לפנות למשתמש בשמו ובמגדרו אם ידוע.
+3. לאסוף מידע חיוני לפני מתן ייעוץ, כולל:
+   - מאפיינים אישיים (גיל, גובה, משקל, שם ומגדר)
+   - רמת פעילות נוכחית
+   - מטרות כושר ובריאות
+   - העדפות אימון (תדירות, מיקום, ציוד זמין)
+   - מגבלות רפואיות או פציעות
+   - ניסיון קודם באימוני כושר
+   - זמן זמין לאימונים
+   - העדפות והגבלות תזונתיות
+
+4. ליצור תוכנית אימונים מותאמת אישית הכוללת:
+   - סוגי אימונים, תדירות ומשך
+   - תרגילים ספציפיים עם סטים וחזרות
+   - הסבר מפורט לצורת הביצוע של כל תרגיל
+   - המלצות לחימום, מתיחות והתקדמות
+   - אזהרות בטיחות מותאמות
+
+5. לפתח תוכנית תזונה מותאמת אישית:
+   - חישוב צרכים קלוריים לפי נוסחת האריס בנדיקט
+   - חלוקת מאקרו-נוטריינטים מתאימה
+   - המלצות לארוחות לפני ואחרי אימון
+   - טיפים לתזונה נכונה והרגלי אכילה בריאים
+
+6. להסביר ולנמק כל המלצה בקצרה.
+7. לעודד הקשבה לגוף, מנוחה והתאוששות.
+8. לספק טיפים למוטיבציה ושמירה על עקביות.
+9. להמליץ על מעקב אחר התקדמות והתאמת התוכנית בהתאם.
+10. להימנע מעצות רפואיות מורכבות ולהפנות לאיש מקצוע במידת הצורך.
+
+דבר בגוף ראשון והתאם את הטון לאופי של מאמן כושר מקצועי, תומך ומעודד.
+""")
+
+# עדכון ה-template
 template = """
-אתה מאמן כושר וירטואלי בשם אלון. תפקידך לספק ייעוץ מדויק, מועיל ומותאם אישית. הקפד על הכללים הבאים:
-
-- ענה תמיד בעברית בתשובות קצרות, ממוקדות ויעילות.
-- התייחס להיסטוריית השיחה ולמידע שסופק בעבר.
-- הצע עצות מעשיות וברורות ליישום מיידי, ועודד את המשתמש.
-- שאל שאלות קצרות להשלמת מידע חסר.
-- הימנע מעצות רפואיות מורכבות והמלץ לפנות לרופא במידת הצורך.
-- פנה למשתמש בשמו הפרטי אם ידוע.
-- ודא שיש לך את כל המידע הנדרש על המשתמש לפני מתן ייעוץ. אם יש מידע חסר, שאל שאלות ממוקדות כדי להשלים אותו לפני שתמשיך.
-
-היסטוריית השיחה:
-{history}
-
 מידע על המשתמש:
 שם: {user_name}
 מגדר: {gender}
@@ -59,7 +90,11 @@ template = """
 """
 
 
-prompt = ChatPromptTemplate.from_template(template)
+prompt = ChatPromptTemplate.from_messages([
+    system_message,
+    MessagesPlaceholder(variable_name="history"),
+    HumanMessagePromptTemplate.from_template(template)
+])
 
 def extract_user_info(response):
     import re
@@ -103,7 +138,7 @@ def handle_conversation(user_id, user_message):
             config={"configurable": {"session_id": str(user_id)}},
         )
         ai_message = response.content
-        print("response: ", response)
+        
         logger.info(f"אורך התשובה מ-Claude: {len(ai_message)} תווים")
         
         # חילוץ מידע המשתמש מהתשובה
@@ -119,7 +154,14 @@ def handle_conversation(user_id, user_message):
         user_histories[user_id].add_user_message(user_message)
         user_histories[user_id].add_ai_message(cleaned_response)
         
+        # שמירת רק 20 ההודעות האחרונות
+        if len(user_histories[user_id].messages) > 40:  # 20 זוגות של הודעות משתמש ו-AI
+            user_histories[user_id].messages = user_histories[user_id].messages[-40:]
+
         return cleaned_response
+    except AttributeError as e:
+        logger.error(f"AttributeError: {str(e)}", exc_info=True)
+        return "מצטער, נתקלתי בבעיה. אנא נסה שוב מאוחר יותר."
     except Exception as e:
         logger.error(f"שגיאה בקבלת או שליחת תשובה: {str(e)}", exc_info=True)
         return "מצטער, נתקלתי בבעיה. אנא נסה שוב מאוחר יותר."
