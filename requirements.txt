@@ -1,5 +1,9 @@
 python-telegram-bot
+python-telegram-bot[webhooks]
 langchain-anthropic
 langchain-community
 langchain
 python-dotenv
+speechrecognition
+pydub
+flask
