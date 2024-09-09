@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import ChatAction
 from .speech_utils import handle_voice_message
-from conversation import handle_conversation
+from conversation.conversation_handler import handle_conversation
 from logger import logger
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE, user_message: str) -> None:
@@ -27,12 +27,3 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif update.message.text:  # אם התקבלה הודעת טקסט
         user_message = update.message.text
         await handle_text_message(update, context, user_message)
-
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = update.effective_user
-    await update.message.reply_html(
-        f"שלום {user.mention_html()}! אני אלון, מאמן הכושר הווירטואלי שלך. כאן כדי לעזור לך להגיע ליעדים שלך. אשמח לדעת קצת יותר עליך כדי להתאים לך תכנית אישית. שנתחיל?"
-    )
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("אני יכול לעזור לך בנושאי כושר ותזונה. פשוט שאל אותי כל שאלה!")
