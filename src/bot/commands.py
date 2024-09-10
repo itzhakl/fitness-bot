@@ -7,19 +7,9 @@ from bot.change_info import update_personal_info
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     await update.message.reply_html(
-        f"ברוך הבא, {user.mention_html()}! 🏋️‍♂️💪\n\n"
+        f"ברוך הבא, {user.full_name}! 🏋️‍♂️💪\n\n"
         f"אני אלון, מאמן הכושר הווירטואלי האישי שלך. נרגש לעזור לך להשיג את יעדי הכושר שלך ולהפוך לגרסה הטובה ביותר של עצמך.\n\n"
         f"מוכן להתחיל במסע הכושר שלך? בוא נצא לדרך!"
-    )
-
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(
-        "הנה כמה דרכים בהן אני יכול לעזור לך:\n\n"
-        "🏋️‍♂️ תוכניות אימונים מותאמות אישית\n"
-        "🥗 עצות תזונה ותפריטים מומלצים\n"
-        "📊 מעקב אחר ההתקדמות שלך\n"
-        "❓ מענה לשאלות בנושאי כושר ובריאות\n\n"
-        "פשוט שאל אותי כל שאלה, ואני אשמח לעזור!"
     )
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -31,13 +21,19 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         f"אני משלב ידע מקצועי עם גישה אישית כדי לעזור לך להצליח.\n\n"
         f"פותחתי על ידי [{developer_name}](https://t.me/{developer_username}), "
         f"מפתח שרוצה להנגיש אימוני כושר וידע תזונתי איכותי לכולם.\n\n"
+        f"הנה כמה דרכים בהן אני יכול לעזור לך:\n\n"
+        f"🏋️‍♂️ תוכניות אימונים מותאמות אישית\n"
+        f"🥗 עצות תזונה ותפריטים מומלצים\n"
+        f"📊 מעקב אחר ההתקדמות שלך\n"
+        f"❓ מענה לשאלות בנושאי כושר ובריאות\n\n"
+        f"פשוט שאל אותי כל שאלה, ואני אשמח לעזור!\n\n"
         f"בוא נעבוד יחד להשגת המטרות שלך! 💯",
         parse_mode=ParseMode.MARKDOWN
     )
 
 async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    
+
     if query:
         await query.answer()
         if query.data == 'update_personal_info':
