@@ -1,22 +1,29 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
-from conversation.user_management import initialize_user_profile
+from conversation.user_management import get_user_profile
 from bot.change_info import update_personal_info
+from bot.authorization import check_code, is_user_authorized, AUTHORISATION_CODE
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
-    await update.message.reply_html(
-        f"ברוך הבא, {user.full_name}! 🏋️‍♂️💪\n\n"
-        f"אני אלון, מאמן הכושר הווירטואלי האישי שלך. נרגש לעזור לך להשיג את יעדי הכושר שלך ולהפוך לגרסה הטובה ביותר של עצמך.\n\n"
-        f"מוכן להתחיל במסע הכושר שלך? בוא נצא לדרך!"
-    )
+    if is_user_authorized(user.id):
+        await update.message.reply_text("ברוך הבא חזרה! אתה כבר מורשה להשתמש בבוט.")
+    else:
+        await update.message.reply_html(
+            f"ברוך הבא, {user.full_name}! 🏋️‍♂️💪\n\n"
+            "אני אלון, המאמן האישי שלך, ואני כאן כדי לעזור לך להשיג את מטרות הכושר שלך ולהפוך לגרסה הכי טובה של עצמך. "
+            "יחד נבנה תוכנית מותאמת אישית שתתמוך בך בכל שלב של המסע.\n\n"
+            "מוכן לצאת לדרך? בוא נתחיל!\n"
+            "הזן קוד:"
+        )
+        context.user_data['waiting_for_code'] = True
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     developer_name = "itzhak • יצחק"
-    developer_username = "itzhak_il"  # Replace with the actual username
+    developer_username = "itzhak_il"
     await update.message.reply_text(
-        f"היי! אני אלון, המאמן הווירטואלי שלך לכושר ואורח חיים בריא. 🤖💪\n\n"
+        f"היי! אני אלון, המאמן האישי שלך לכושר ואורח חיים בריא. 🤖💪\n\n"
         f"נוצרתי כדי לספק לך הדרכה אישית, מוטיבציה ותמיכה בדרך להשגת יעדי הכושר והתזונה שלך. "
         f"אני משלב ידע מקצועי עם גישה אישית כדי לעזור לך להצליח.\n\n"
         f"פותחתי על ידי [{developer_name}](https://t.me/{developer_username}), "
@@ -58,7 +65,7 @@ async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
-    user_profile = initialize_user_profile(user_id)
+    user_profile = get_user_profile(user_id)
     await update.message.reply_text(
         "👤 הפרופיל שלך\n\n"
         "• נתונים אישיים\n"
