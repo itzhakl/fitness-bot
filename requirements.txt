@@ -4,7 +4,7 @@ langchain-openai
 langchain-community
 langchain
 # python-dotenv
-# speechrecognition
+speechrecognition
 pydub
 flask
 redis
