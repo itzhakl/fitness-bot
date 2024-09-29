@@ -3,10 +3,11 @@ from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 from conversation.user_management import get_user_profile
 from bot.change_info import update_personal_info
-from bot.authorization import check_code, is_user_authorized, AUTHORISATION_CODE
+from bot.authorization import is_user_authorized, AUTHORISATION_CODE
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
+    print(f"User {user.id} started bot")
     if is_user_authorized(user.id):
         await update.message.reply_text("ברוך הבא חזרה! אתה כבר מורשה להשתמש בבוט.")
     else:

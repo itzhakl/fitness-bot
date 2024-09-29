@@ -10,7 +10,12 @@ from bot.authorization import add_authorized_user
 
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE, user_message: str) -> None:
+    
+    # שליחת פעולת "מקליד..."
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+
     user_id = update.effective_user.id
+    print(f"User {user_id} sent message: {user_message}")
     if context.user_data.get('waiting_for_code', True):
         code = update.message.text
         if code == AUTHORISATION_CODE:
@@ -18,11 +23,8 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             context.user_data['waiting_for_code'] = False
             await update.message.reply_text("קוד נכון! אתה מורשה להשתמש בבוט.")
         else:
-            await update.message.reply_text("קוד שגוי. נסה שוב או הקלד /start להתחלה מחדש.")
+            await update.message.reply_text("קוד שגוי ):")
     else:
-        # שליחת פעולת "מקליד..."
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-
         # העברת ההודעות האחרונות לתוך פונקציית הטיפול בשיחה
         response = handle_conversation(user_id, user_message)
 

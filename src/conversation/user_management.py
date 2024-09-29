@@ -46,6 +46,8 @@ def get_user_profile(user_id: int) -> UserProfile:
 
 
 def update_user_profile(user_id, data):
+    if data is None:
+        return
     profile = get_user_profile(user_id)
     for key, value in data.items():
         setattr(profile, key, value)
