@@ -14,5 +14,5 @@ def get_webhook_url():
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 WEBHOOK_URL = get_webhook_url()
-PORT = os.getenv("PORT")
+PORT = os.getenv("PORT") | 8443
 AUTHORISATION_CODE = os.getenv("AUTHORISATION_CODE")
